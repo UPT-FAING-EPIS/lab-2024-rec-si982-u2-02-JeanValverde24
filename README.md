@@ -2,7 +2,7 @@
 [![Open in Codespaces](https://classroom.github.com/assets/launch-codespace-2972f46106e565e64193e422d61a12cf1da4916b45550586e14ef0a7c637dd04.svg)](https://classroom.github.com/open-in-codespaces?assignment_repo_id=18151716)
 # SESION DE LABORATORIO N° 03: Construyendo una aplicación Web utilizando Blazor Server
 
-### Nombre: 
+### Nombre: Jean Pier ELias Valverde Zamora
 
 ## OBJETIVOS
   * Desarrolla una aplicación web utilizando Blazor Server.
@@ -57,6 +57,9 @@
     
 ## DESARROLLO
 1. Iniciar la aplicación Powershell o Windows Terminal en modo administrador.
+
+![alt text](image.png)
+
 2. En el terminal, ubicarse en un ruta que no sea del sistema y ejecutar los siguientes comandos.
 ```Bash
 md src
@@ -73,8 +76,9 @@ dotnet add package Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdap
 dotnet tool install -g dotnet-ef --version 8.0.0
 dotnet tool install -g dotnet-aspnet-codegenerator --version 8.0.0
 ```
+![alt text](image-1.png)
 
-3. Abrir Visual Studio Code y elegir la carpeta del proyecto, dentro del proyecto Financiera.WebApp, crear la carpeta Modelos, y dentro de esta crear los siguientes archivos con lo siguientes contenidos:
+1. Abrir Visual Studio Code y elegir la carpeta del proyecto, dentro del proyecto Financiera.WebApp, crear la carpeta Modelos, y dentro de esta crear los siguientes archivos con lo siguientes contenidos:
 > Cliente.cs
 ```CSharp
 namespace Financiera.WebApp.Modelos;
@@ -313,6 +317,8 @@ public class TipoMovimiento
     }
 }
 ```
+![alt text](image-2.png)
+
 4. En Visual Studio Code, dentro del proyecto Financiera.WebApp, crear la carpeta Mapeos, y dentro de esta crear los siguientes archivos con lo siguientes contenidos:
 > ClienteConfiguracion.cs
 ```CSharp
@@ -388,6 +394,8 @@ public class TipoMovimientoConfiguracion : IEntityTypeConfiguration<TipoMovimien
     }
 }
 ```
+![alt text](image-3.png)
+
 7. En Visual Studio Code, dentro del proyecto Financiera.WebApp, en la raiz crear el siguiente archivo y contenido:
 > FinancieraContexto.cs
 ```CSharp
@@ -445,29 +453,192 @@ eb create dev-env -s -sr LabRole -ip LabInstanceProfile -db
 ```
 > Nota: para la base de datos se utilizar las credenciales usuario: sqladmin y password: upt.2025
 
+![alt text](image-4.png)
+
+```Bash
+Enter an RDS DB username (default is "ebroot"): sqladmin
+Enter an RDS DB master password:
+Retype password to confirm:
+Creating application version archive "app-250211_164411034297".
+Uploading Financiera.WebApp/app-250211_164411034297.zip to S3. This may take a while.
+Upload Complete.
+Environment details for: dev-env
+  Application name: Financiera.WebApp
+  Region: us-east-1
+  Deployed Version: app-250211_164411034297
+  Environment ID: e-5davmvupac
+  Platform: arn:aws:elasticbeanstalk:us-east-1::platform/.NET 8 running on 64bit Amazon Linux 2023/3.3.0
+  Tier: WebServer-Standard-1.0
+  CNAME: UNKNOWN
+  Updated: 2025-02-11 21:44:16.872000+00:00
+Printing Status:
+2025-02-11 21:44:15    INFO    createEnvironment is starting.
+2025-02-11 21:44:17    INFO    Using elasticbeanstalk-us-east-1-895176160814 as Amazon S3 storage bucket for environment data.
+2025-02-11 21:44:44    INFO    Created security group named: awseb-e-5davmvupac-stack-AWSEBSecurityGroup-9bNKKBjB6ZNe
+2025-02-11 21:44:59    INFO    Creating RDS database named: awseb-e-5davmvupac-stack-awsebrdsdatabase-l0qgj4q0bdos. This may take a few minutes.
+2025-02-11 21:44:59    INFO    Created EIP: 3.231.45.110
+ -- Events -- (safe to Ctrl+C)
+```
+
 9. En el terminal, verificar las instancias de base de datos creadas.
 ```Bash
 aws rds describe-db-instances
 ```
+![alt text](image-5.png)
 
-10. En el terminal, ejecutar el siguiente comando para añadir el puerto de entrada a la base de datos (1521) el cual servira para la comunicación, reemplazar el valor de group-id por el valor de VpcSecurityGroupId obtenido en el paso anterior
+```Bash
+{
+    "DBInstances": [
+        {
+            "DBInstanceIdentifier": "awseb-e-5davmvupac-stack-awsebrdsdatabase-l0qgj4q0bdos",
+            "DBInstanceClass": "db.t3.small",
+            "Engine": "mysql",
+            "DBInstanceStatus": "creating",
+            "MasterUsername": "sqladmin",
+            "DBName": "ebdb",
+            "AllocatedStorage": 5,
+            "PreferredBackupWindow": "06:16-06:46",
+            "BackupRetentionPeriod": 1,
+            "DBSecurityGroups": [
+                {
+                    "DBSecurityGroupName": "awseb-e-5davmvupac-stack-awsebrdsdbsecuritygroup-1ujed33zndgwf",
+                    "Status": "active"
+                }
+            ],
+            "VpcSecurityGroups": [
+                {
+                    "VpcSecurityGroupId": "sg-0987c5d885486d5c3",
+                    "Status": "active"
+                }
+            ],
+            "DBParameterGroups": [
+                {
+                    "DBParameterGroupName": "default.mysql8.0",
+                    "ParameterApplyStatus": "in-sync"
+                }
+            ],
+            "AvailabilityZone": "us-east-1d",
+            "DBSubnetGroup": {
+                "DBSubnetGroupName": "default",
+                "DBSubnetGroupDescription": "default",
+                "VpcId": "vpc-08cb492e195299b66",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                    {
+                        "SubnetIdentifier": "subnet-042e705e36e7860fa",
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1a"
+                        },
+                        "SubnetOutpost": {},
+                        "SubnetStatus": "Active"
+                    },
+                    {
+                        "SubnetIdentifier": "subnet-0bc61b511b77a088f",
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1c"
+                        },
+                        "SubnetOutpost": {},
+                        "SubnetStatus": "Active"
+                    },
+                    {
+                        "SubnetIdentifier": "subnet-09c0bd1316f06c0cf",
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1f"
+                        },
+                        "SubnetOutpost": {},
+                        "SubnetStatus": "Active"
+                    },
+                    {
+                        "SubnetIdentifier": "subnet-0a5aca1e0832f6524",
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1d"
+                        },
+                        "SubnetOutpost": {},
+                        "SubnetStatus": "Active"
+                    },
+                    {
+                        "SubnetIdentifier": "subnet-0f8ec7f5e8cd0cbdf",
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1b"
+                        },
+                        "SubnetOutpost": {},
+                        "SubnetStatus": "Active"
+                    },
+                    {
+                        "SubnetIdentifier": "subnet-0b4350d2c94c3a513",
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1e"
+                        },
+                        "SubnetOutpost": {},
+                        "SubnetStatus": "Active"
+                    }
+                ]
+            },
+            "PreferredMaintenanceWindow": "sat:04:18-sat:04:48",
+            "PendingModifiedValues": {
+                "MasterUserPassword": "****"
+            },
+            "MultiAZ": false,
+            "EngineVersion": "8.0.40",
+            "AutoMinorVersionUpgrade": true,
+            "ReadReplicaDBInstanceIdentifiers": [],
+            "LicenseModel": "general-public-license",
+            "OptionGroupMemberships": [
+                {
+                    "OptionGroupName": "default:mysql-8-0",
+                    "Status": "in-sync"
+                }
+            ],
+            "PubliclyAccessible": true,
+            "StorageType": "gp2",
+            "DbInstancePort": 0,
+            "StorageEncrypted": false,
+            "DbiResourceId": "db-FG7W5FWF7T6BJEHNOIQT4ATAGY",
+            "CACertificateIdentifier": "rds-ca-rsa2048-g1",
+            "DomainMemberships": [],
+            "CopyTagsToSnapshot": false,
+            "MonitoringInterval": 0,
+            "DBInstanceArn": "arn:aws:rds:us-east-1:895176160814:db:awseb-e-5davmvupac-stack-awsebrdsdatabase-l0qgj4q0bdos",
+            "IAMDatabaseAuthenticationEnabled": false,
+            "DatabaseInsightsMode": "standard",
+            "PerformanceInsightsEnabled": false,
+            "DeletionProtection": false,
+            "AssociatedRoles": [],
+            "TagList": [],
+            "CustomerOwnedIpEnabled": false,
+            "ActivityStreamStatus": "stopped",
+            "BackupTarget": "region",
+            "NetworkType": "IPV4",
+            "StorageThroughput": 0,
+            "CertificateDetails": {
+                "CAIdentifier": "rds-ca-rsa2048-g1"
+            },
+            "DedicatedLogVolume": false,
+            "IsStorageConfigUpgradeAvailable": false,
+            "EngineLifecycleSupport": "open-source-rds-extended-support"
+        }
+    ]
+}
+```
+10.  En el terminal, ejecutar el siguiente comando para añadir el puerto de entrada a la base de datos (1521) el cual servira para la comunicación, reemplazar el valor de group-id por el valor de VpcSecurityGroupId obtenido en el paso anterior
 ```Bash
 aws ec2 authorize-security-group-ingress --group-id sg-XXXXXXXXXXXXXX --protocol tcp --port 1521 --cidr 0.0.0.0/0
 ```
+![alt text](image-6.png)
 
-11. En Visual Studio Code, editar el archivo appsetting.json, que se encuentra en el proyecto Financiera.WebApp, y adicionar lo siguiente despues de la apertura de la primera llave.
+11.  En Visual Studio Code, editar el archivo appsetting.json, que se encuentra en el proyecto Financiera.WebApp, y adicionar lo siguiente despues de la apertura de la primera llave.
 ```JSON
   "ConnectionStrings": {
     "FinancieraBD": "Server=XXXXXXXXXXXXXXXX; User ID=sqlamin; Password=upt.2025; Database=ebdb"
   },
 ```
 > Nota: Reemplazar las XXXXXXXXXX con el nombre del servidor de base de datos generado previamente.
-12. En Visual Studio Code, en el proyecto Financiera.WebApp modificar el archivo program.cs, al inicio del archivo agregar
+12.  En Visual Studio Code, en el proyecto Financiera.WebApp modificar el archivo program.cs, al inicio del archivo agregar
 ```C#
 using Financiera.WebApp;
 using Microsoft.EntityFrameworkCore;
 ```
-13. En Visual Studio Code, en el proyecto Financiera.WebApp modificar el archivo program.cs, debajo de la linea que indica `// Add services to the container`.
+13.  En Visual Studio Code, en el proyecto Financiera.WebApp modificar el archivo program.cs, debajo de la linea que indica `// Add services to the container`.
 ```C#
 string connectionString = builder.Configuration.GetConnectionString("FinancieraBD")??"";
 builder.Services.AddDbContext<FinancieraContexto>(
@@ -476,20 +647,24 @@ builder.Services.AddDbContext<FinancieraContexto>(
 builder.Services.AddQuickGridEntityFrameworkAdapter();
 ```
 
-14. En el terminal, esperar un minuto que inicie correctamente el contenedor y ejecutar el siguiente comando para efectuar la migración:
+14.  En el terminal, esperar un minuto que inicie correctamente el contenedor y ejecutar el siguiente comando para efectuar la migración:
 ```Bash
 cd Financiera.WebApp
 dotnet ef migrations add CrearFinancieraBD
 dotnet ef database update
 ```
-15. En el terminal, proceder a generar la interfaz del cliente con el siguiente comando:
+
+![alt text](image-7.png)
+
+15.  En el terminal, proceder a generar la interfaz del cliente con el siguiente comando:
 ```Bash
 cd Financiera.WebApp
 dotnet aspnet-codegenerator blazor CRUD -m Cliente -dc FinancieraContexto
 cd ..
 ```
+![alt text](image-8.png)
 
-16. En Visual Studio Code, en el proyecto Financiera.WebApp en la ruta Components\Layout modificar el archivo NavMenu.razor
+16.  En Visual Studio Code, en el proyecto Financiera.WebApp en la ruta Components\Layout modificar el archivo NavMenu.razor
 > dice
 ```Razor
         <div class="nav-item px-3">
@@ -507,7 +682,9 @@ cd ..
         </div>
 ```
 
-17. En el terminal, para revisar la aplicación utilizar el siguiente comando:
+![alt text](image-9.png)
+
+17.  En el terminal, para revisar la aplicación utilizar el siguiente comando:
 ```
 eb open
 ```
