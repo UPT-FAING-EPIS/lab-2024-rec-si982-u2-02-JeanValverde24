@@ -688,7 +688,7 @@ cd ..
 ```
 eb open
 ```
-
+![alt text](image-10.png)
 ---
 ## Actividades Encargadas
 1. Construir el archivo terraform (archivo main.tf) para aprovisionar la insfraestructura mediante Github Actions (archivo infra.yml) en AWS (4ptos)
