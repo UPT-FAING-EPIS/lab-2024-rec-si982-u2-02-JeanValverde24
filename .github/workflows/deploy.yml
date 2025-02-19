@@ -147,10 +147,3 @@ jobs:
         run: |
           cd infra
           terraform apply -auto-approve
-
-      # 🔹 **FORZAR `terraform destroy` incluso si el despliegue falló**
-      - name: Terraform Destroy (Eliminar Infraestructura)
-        if: always()  # **Se ejecutará incluso si el despliegue falló**
-        run: |
-          cd infra
-          terraform destroy -auto-approve
