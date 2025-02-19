@@ -52,7 +52,6 @@ jobs:
         id: tf-plan-string
         run: |
             TERRAFORM_PLAN=$(cd infra && terraform show -no-color main.tfplan)
-
             delimiter="$(openssl rand -hex 8)"
             echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
             echo "## Terraform Plan Output" >> $GITHUB_OUTPUT
@@ -145,3 +144,12 @@ jobs:
         run: |
           cd infra
           terraform apply -auto-approve
+
+      # 🔹 Terraform Breakdown (Resumen final de infraestructura creada)
+      - name: Terraform Breakdown (Resumen de Recursos)
+        run: |
+          cd infra
+          echo "## 🔍 Resumen Final de Infraestructura - Terraform Breakdown" >> $GITHUB_STEP_SUMMARY
+          echo '```terraform' >> $GITHUB_STEP_SUMMARY
+          terraform state list >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
