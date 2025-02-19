@@ -1,0 +1,122 @@
+name: Construcción infraestructura en AWS
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  Deploy-infra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 🔹 Configurar credenciales de AWS
+      - name: Configurar AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ secrets.AWS_REGION }}
+
+      # 🔹 Crear archivo terraform.tfvars si es necesario
+      - name: Crear terraform.tfvars
+        run: |
+          cd infra
+          echo "db_username=\"${{ secrets.DB_USERNAME }}\"" > terraform.tfvars
+          echo "db_password=\"${{ secrets.DB_PASSWORD }}\"" >> terraform.tfvars
+
+      # 🔹 Configurar Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        id: init
+        run: cd infra && terraform init 
+
+      - name: Terraform Validate
+        id: validate
+        run: cd infra && terraform validate -no-color
+
+      - name: Terraform Plan
+        run: cd infra && terraform plan -no-color -out main.tfplan
+
+      # 🔹 Generar el Plan de Terraform en la Consola
+      - name: Crear String Output
+        id: tf-plan-string
+        run: |
+            TERRAFORM_PLAN=$(cd infra && terraform show -no-color main.tfplan)
+
+            delimiter="$(openssl rand -hex 8)"
+            echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
+            echo "## Terraform Plan Output" >> $GITHUB_OUTPUT
+            echo "<details><summary>Click to expand</summary>" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo '```terraform' >> $GITHUB_OUTPUT
+            echo "$TERRAFORM_PLAN" >> $GITHUB_OUTPUT
+            echo '```' >> $GITHUB_OUTPUT
+            echo "</details>" >> $GITHUB_OUTPUT
+            echo "${delimiter}" >> $GITHUB_OUTPUT
+
+      - name: Publish Terraform Plan to Task Summary
+        env:
+          SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
+        run: |
+          echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+
+      # 🔹 Configurar Infracost para AWS
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Infracost Breakdown
+        run: |
+          cd infra
+          infracost breakdown --path . --format html --out-file infracost-report.html
+          sed -i '19,137d' infracost-report.html
+          sed -i 's/$0/$ 0/g' infracost-report.html
+
+      - name: Convert HTML to Markdown
+        id: html2markdown
+        uses: rknj/html2markdown@v1.1.0
+        with:
+          html-file: "infra/infracost-report.html"
+
+      - name: Upload Infracost Report
+        run: |
+          echo "## Infracost Report" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.html2markdown.outputs.markdown-content }}" >> infracost.md
+          cat infracost.md >> $GITHUB_STEP_SUMMARY
+
+      # 🔹 Configurar Graphviz para visualización de infraestructura
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v2        
+
+      # 🔹 Instalar y generar gráfico de la infraestructura con Inframap
+      - name: Setup inframap
+        run: |
+          curl -L -o /tmp/inframap.tar.gz "https://github.com/cycloidio/inframap/releases/download/v0.7.0/inframap-linux-amd64.tar.gz"
+          tar -xzvf /tmp/inframap.tar.gz -C /tmp
+          mv -v /tmp/inframap-linux-amd64 /usr/local/bin/inframap
+          chmod +x /usr/local/bin/inframap
+
+      - name: Generar diagrama de infraestructura
+        run: |
+          cd infra
+          /usr/local/bin/inframap generate main.tf --raw | dot -Tsvg > inframap_aws.svg
+
+      - name: Upload inframap
+        id: inframap-upload-step
+        uses: actions/upload-artifact@v4
+        with:
+          name: inframap_aws.svg
+          path: infra/inframap_aws.svg
+
+      # 🔹 Aplicar los cambios en Terraform
+      - name: Terraform Apply
+        run: |
+          cd infra
+          terraform apply -auto-approve
