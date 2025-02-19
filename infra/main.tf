@@ -72,7 +72,7 @@ resource "aws_elastic_beanstalk_environment" "webapp_env" {
 
 # Security Group con nombre fijo para Elastic Beanstalk y MySQL
 resource "aws_security_group" "webapp_sg" {
-  name        = "sg-valverde"
+  name        = "valverde-sg" # 🔹 Se cambió para que no empiece con "sg-"
   description = "Security group para Elastic Beanstalk y MySQL"
 
   # Permitir tráfico HTTP
