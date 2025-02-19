@@ -119,6 +119,27 @@ jobs:
           name: inframap_aws.svg
           path: infra/inframap_aws.svg
 
+      # 🔹 Generar diagrama de infraestructura detallado en formato Mermaid
+      - name: Generar diagrama de infraestructura detallado en formato Mermaid
+        run: |
+          cd infra
+          echo "## 🔹 Mapa Completo de Infraestructura en Mermaid" > inframap.mmd
+          echo "```mermaid" >> inframap.mmd
+          echo "graph TD;" >> inframap.mmd
+          
+          # Obtener la estructura completa en JSON y convertirla en Mermaid detallado
+          inframap generate main.tf --json | jq -r '
+            .resources | to_entries[] | 
+            "    " + .key + " -->|connected to| " + (.value.providers[0] // "unknown") + " : " + (.value.mode // "managed")
+          ' >> inframap.mmd
+          
+          echo "```" >> inframap.mmd
+
+      - name: Publicar diagrama detallado Mermaid en GitHub Summary
+        run: |
+          echo "## 🏗️ Infraestructura Desplegada - Diagrama Completo" >> $GITHUB_STEP_SUMMARY
+          cat infra/inframap.mmd >> $GITHUB_STEP_SUMMARY
+
       # 🔹 Aplicar los cambios en Terraform
       - name: Terraform Apply
         run: |
