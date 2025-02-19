@@ -118,7 +118,7 @@ jobs:
           name: inframap_aws.svg
           path: infra/inframap_aws.svg
 
-      # 🔹 Generar diagrama de infraestructura detallado en formato Mermaid
+      # 🔹 Generar diagrama detallado en formato Mermaid
       - name: Generar diagrama de infraestructura detallado en formato Mermaid
         run: |
           cd infra
@@ -126,10 +126,13 @@ jobs:
           echo "```mermaid" >> inframap.mmd
           echo "graph TD;" >> inframap.mmd
           
-          # Obtener la estructura completa en JSON y convertirla en Mermaid detallado
+          # Obtener estructura detallada desde Inframap en JSON y convertirla a Mermaid
           inframap generate main.tf --json | jq -r '
             .resources | to_entries[] | 
-            "    " + .key + " -->|connected to| " + (.value.providers[0] // "unknown") + " : " + (.value.mode // "managed")
+            "    " + .key + " -->|connected to| " + 
+            (.value.providers[0] // "unknown") + 
+            " : " + (.value.mode // "managed") + " : " + 
+            (.value.type // "unknown") 
           ' >> inframap.mmd
           
           echo "```" >> inframap.mmd
@@ -145,11 +148,9 @@ jobs:
           cd infra
           terraform apply -auto-approve
 
-      # 🔹 Terraform Breakdown (Resumen final de infraestructura creada)
-      - name: Terraform Breakdown (Resumen de Recursos)
+      # 🔹 **FORZAR `terraform destroy` incluso si el despliegue falló**
+      - name: Terraform Destroy (Eliminar Infraestructura)
+        if: always()  # **Se ejecutará incluso si el despliegue falló**
         run: |
           cd infra
-          echo "## 🔍 Resumen Final de Infraestructura - Terraform Breakdown" >> $GITHUB_STEP_SUMMARY
-          echo '```terraform' >> $GITHUB_STEP_SUMMARY
-          terraform state list >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          terraform destroy -auto-approve
